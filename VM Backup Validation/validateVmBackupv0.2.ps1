@@ -8,7 +8,7 @@ PURPOSE: This script validates all vm data from all local backup jobs and export
 	The Veeam Backup Validator re-calculates the checksums for data blocks and compares them with the initial written values.
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 23JUN2022
+LAST UPDATED: 22JUN2022
 #>
 
 # Declarations
