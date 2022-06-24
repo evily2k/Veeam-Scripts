@@ -9,7 +9,7 @@ PURPOSE: This script validates all vm data from all local backup jobs and export
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
 LAST UPDATED: 23JUN2022
-Version: 0.5
+Version: 0.6
 #>
 
 Set-PSDebug -Trace 2
