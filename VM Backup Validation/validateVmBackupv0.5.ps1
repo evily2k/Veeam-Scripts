@@ -32,10 +32,10 @@ if (!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Direct
 
 # Check if logfile exists; If not then create it
 if (!(Test-Path $VBVReport)){
-		New-Item -path $reportDir -name $VBVReportName -type "file" -value $VBVReportHeader
-		Add-Content -Path $VBVReport "`n"
-	}else{
-		Add-Content -Path $VBVReport "`r`n", $VBVReportHeader
+	New-Item -path $reportDir -name $VBVReportName -type "file" -value $VBVReportHeader
+	Add-Content -Path $VBVReport "`n"
+}else{
+	Add-Content -Path $VBVReport "`r`n", $VBVReportHeader
 }
 
 # Get all local Veeam backup jobs
