@@ -25,13 +25,13 @@ $VBVReportHeader = "--------- Veeam Validator Results ($todaysDate) ---------"
 
 # Main
 # Check if EventLog exists; ; If not then create it
-if(![System.Diagnostics.EventLog]::SourceExists($eventName)){New-Eventlog -LogName Application -Source $eventName}
+if (![System.Diagnostics.EventLog]::SourceExists($eventName)){New-Eventlog -LogName Application -Source $eventName}
 
 #Check if Report folder exists; If not then create it
-if(!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
+if (!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
 
 # Check if logfile exists; If not then create it
-if(!(Test-Path $VBVReport)){
+if (!(Test-Path $VBVReport)){
 		New-Item -path $reportDir -name $VBVReportName -type "file" -value $VBVReportHeader
 		Add-Content -Path $VBVReport "`n"
 	}else{
@@ -39,19 +39,19 @@ if(!(Test-Path $VBVReport)){
 }
 
 # Get all local Veeam backup jobs
-foreach($job in Get-VBRJob){
+foreach ($job in Get-VBRJob){
 	
 	# Skip jobs that aren't backup type or not scheduled
-	if(($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
+	if (($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
 	
 	# Get all VMs listed in backup job
 	$vmRestore = Get-VBRJobObject -job $job.Name
 	
-	foreach($vm in $vmRestore){
+	foreach ($vm in $vmRestore){
 		
 		# Verify VM has a name, is powered on, and size is greater than zero
 		$findEnt = Find-VBRViEntity -name $vm.Name
-		if(($vm.Name -eq $NULL) -or ($findEnt.PowerState -eq 'PoweredOff') -or ($vm.ApproxSizeString -eq '0.0 B')){continue}
+		if (($vm.Name -eq $NULL) -or ($findEnt.PowerState -eq 'PoweredOff') -or ($vm.ApproxSizeString -eq '0.0 B')){continue}
 		
 		# Set VM and Backup names to variables
 		[string]$vmName = $vm.Name
@@ -67,7 +67,7 @@ foreach($job in Get-VBRJob){
 		# Get XML report content and verify success or failure
 		[xml]$report = get-content $ReportName
 		$validatorResults = $report.Report.ResultInfo.Result
-		if($validatorResults -eq 'Success'){
+		if ($validatorResults -eq 'Success'){
 			[string]$VBVlog = "[$(Get-Date -format 'u')] [SUCCESS] [$vmName] VM backup file verification completed successfully."
 			Write-host $VBVlog
 			$VBVresults += @($VBVlog)
@@ -82,7 +82,7 @@ foreach($job in Get-VBRJob){
 		
 	}
 	# Output all results to the event log as one event
-	if(!($VBVErrors)){
+	if (!($VBVErrors)){
 		$eventType = "Information"
 		# Event will contain all VM verification results
 		Write-EventLog -LogName Application -Source $eventName -EntryType $eventType -EventId 6904 -Message ($VBVresults | out-string)
