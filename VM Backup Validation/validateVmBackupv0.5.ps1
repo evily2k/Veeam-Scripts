@@ -25,10 +25,10 @@ $VBVReportHeader = "--------- Veeam Validator Results ($todaysDate) ---------"
 
 # Main
 # Check if EventLog exists; ; If not then create it
-If(![System.Diagnostics.EventLog]::SourceExists($eventName)){New-Eventlog -LogName Application -Source $eventName}
+if(![System.Diagnostics.EventLog]::SourceExists($eventName)){New-Eventlog -LogName Application -Source $eventName}
 
 #Check if Report folder exists; If not then create it
-If(!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
+if(!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
 
 # Check if logfile exists; If not then create it
 if(!(Test-Path $VBVReport)){
@@ -39,19 +39,19 @@ if(!(Test-Path $VBVReport)){
 }
 
 # Get all local Veeam backup jobs
-foreach ($job in Get-VBRJob)
-{	
+foreach($job in Get-VBRJob){
+	
 	# Skip jobs that aren't backup type or not scheduled
-	If(($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
+	if(($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
 	
 	# Get all VMs listed in backup job
 	$vmRestore = Get-VBRJobObject -job $job.Name
 	
-	foreach ($vm in $vmRestore)
-	{	
+	foreach($vm in $vmRestore){
+		
 		# Verify VM has a name, is powered on, and size is greater than zero
 		$findEnt = Find-VBRViEntity -name $vm.Name
-		If(($vm.Name -eq $NULL) -or ($findEnt.PowerState -eq 'PoweredOff') -or ($vm.ApproxSizeString -eq '0.0 B')){continue}
+		if(($vm.Name -eq $NULL) -or ($findEnt.PowerState -eq 'PoweredOff') -or ($vm.ApproxSizeString -eq '0.0 B')){continue}
 		
 		# Set VM and Backup names to variables
 		[string]$vmName = $vm.Name
@@ -67,13 +67,12 @@ foreach ($job in Get-VBRJob)
 		# Get XML report content and verify success or failure
 		[xml]$report = get-content $ReportName
 		$validatorResults = $report.Report.ResultInfo.Result
-		If ($validatorResults -eq 'Success'){
+		if($validatorResults -eq 'Success'){
 			[string]$VBVlog = "[$(Get-Date -format 'u')] [SUCCESS] [$vmName] VM backup file verification completed successfully."
 			Write-host $VBVlog
 			$VBVresults += @($VBVlog)
 			Add-Content -Path $VBVReport -Value $VBVlog
-		}
-		Else{
+		}else{
 			[string]$VBVlog = "[$(Get-Date -format 'u')] [FAILURE] [$vmName] VM backup file verification failed. Need to review backup health."
 			Write-host $VBVlog
 			$VBVresults += @([string]$VBVlog)
