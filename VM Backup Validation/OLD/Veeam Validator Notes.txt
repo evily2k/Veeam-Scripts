@@ -1,0 +1,32 @@
+# Veeam Validator Notes
+# Veeam Backup Validator Report - Validate VM Last Backup
+
+# This script validates all virtual machines last backup of the Veeam Backups Jobs. 
+# It checks the backup files via CRC at the file level. 
+# For the integrity validation of the backups the Validator uses the checksum algorithm.
+# After each creation of a backup file, Veeam calculates a checksum for every data block in the backup file and will attach the checksums to them.
+# The Veeam Backup Validator re-calculates the checksums for data blocks and compares them with the initial written values.
+
+# Ideas:
+# Possible integration into LT so you can pull up the MGT/VEEAM device view and see the results of the VM validation?
+# Upload results in HTML to IT Glue maybe monthly like how in CW we have the last verified, this would be the same but with more details
+# LT script to run maybe monthly and then results get uploaded to IT Glue
+
+# $book = get-content .\AMC-DC1.xml
+#[xml]$report = get-content $ReportName
+# $book.Report.ResultInfo.Result
+#$validatorResults = $report.Report.ResultInfo.Result
+
+#	1 - Trace script lines as they run; 
+#	2 - Trace script lines, variable assignments, function calls, and scripts.
+
+
+# Get a list of all jobs in Veeam
+foreach ($job in Get-VBRJob)
+{	
+	# If job test for "Backup" type, contains keywords, or is disabled is true then skip.
+	#If(($job.JobType -ne 'Backup') -or ($job.Name -match $excludeRegex) -or ($job.info.IsScheduleEnabled -ne $True)){continue}	
+	# If job test for "Backup" type, contains keywords, or is disabled is true then skip.
+	If(($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
+	echo $job.Name
+}
