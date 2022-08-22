@@ -12,6 +12,7 @@ LAST UPDATED: 24JUN2022
 Version: 0.6
 #>
 
+# Enabled debugging
 Set-PSDebug -Trace 2
 
 # Declarations
@@ -78,8 +79,7 @@ foreach ($job in Get-VBRJob){
 			$VBVresults += @([string]$VBVlog)
 			Add-Content -Path $VBVReport -Value $VBVlog
 			$VBVErrors = $true
-		}
-		
+		}		
 	}
 }
 # Output all results to the event log as one event
