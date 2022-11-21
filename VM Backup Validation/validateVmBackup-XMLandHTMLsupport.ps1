@@ -70,11 +70,13 @@ foreach ($job in Get-VBRJob){
 		# Set VM and Backup names to variables
 		[string]$vmName = $vm.Name
 		[string]$backupName = $job.Name
+		
 		# Veeam Validator report 
 		$ReportName="$($reportDir)\$vmName-Backup-Validation-Report_$(get-date -f dd-MM-yyyy).$($reportFormat)"	
 		
 		# Change working directory to the Veeam Validator program directory
 		set-location "C:\Program Files\Veeam\Backup and Replication\Backup"
+		
 		# Start the Veeam Validation process and export the report as XML (can be XML or HTML)
 		&.\Veeam.Backup.Validator.exe /backup:$backupName /vmname:$vmName /report:$ReportName /format:$reportFormat
 		
