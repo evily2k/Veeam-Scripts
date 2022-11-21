@@ -26,7 +26,7 @@ Set-PSDebug -Trace 2
 Add-PSSnapin VeeamPSSnapin
 $todaysDate = (get-date).ToString("yyyyMMdd")
 $eventSource = "Veeam Validator Results"
-$reportDir = "C:\temp\VeeamFLR\Report"
+$reportDir = "C:\KEworking\VeeamFLR\Report"
 $VBVReportName = "Veeam Validator Results.txt"
 $VBVReport = "$($reportDir)\$($VBVReportName)"
 $VBVReportHeader = "--------- Veeam Validator Results ($todaysDate) ---------"
