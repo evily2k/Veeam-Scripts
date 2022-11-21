@@ -3,7 +3,9 @@ TITLE: Veeam Backup Validator - Last VM Backup Report [WIN]
 PURPOSE: Validates all vm data from all local backups and exports results to XML and logs Success/Failure to the event log for RMMM monitoring
 
 	This script validates all virtual machines last backup of the Veeam Backups Jobs. It checks the backup files via CRC at the file level. 
-	For the integrity validation of the backups the Validator uses the checksum algorithm. After each creation of a backup file, Veeam calculates a checksum for every data block in the backup file and will attach the checksums to them.	The Veeam Backup Validator re-calculates the checksums for data blocks and compares them with the initial written values. 
+	For the integrity validation of the backups the Validator uses the checksum algorithm. After each creation of a backup file, Veeam
+	calculates a checksum for every data block in the backup file and will attach the checksums to them. The Veeam Backup Validator
+	re-calculates the checksums for data blocks and compares them with the initial written values. 
 	
 	Script can be ran to export results in either XML or HTML.
 	XML is used to log the results to both a text file log and the Windows Event log.
