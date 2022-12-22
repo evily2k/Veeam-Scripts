@@ -17,8 +17,8 @@ PURPOSE: Validates all vm data from all local backups and exports results to XML
 	
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 21NOV2022
-Version: 0.6
+LAST UPDATED: 22DEC2022
+Version: 0.8
 #>
 
 # Enabled debugging
