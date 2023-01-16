@@ -67,6 +67,7 @@ foreach ($job in Get-VBRJob){
 	# Get all VMs listed in backup job
 	$vmRestore = Get-VBRJobObject -job $job.Name
 	
+	# Run  the validator against each VM in each backup job
 	foreach ($vm in $vmRestore){
 		
 		# Verify VM has a name, is powered on, and size is greater than zero
@@ -88,15 +89,20 @@ foreach ($job in Get-VBRJob){
 		
 		# Get XML report content and verify success or failure and if backups are within 24 hours old
 		if($reportFormat -eq "xml"){
+			# Load XML file content into a variable to parse
 			[xml]$report = get-content $ReportName
+			# Find validator result in XML file; either success or failure
 			$validatorResults = $report.Report.ResultInfo.Result
 			if ($validatorResults -eq 'Success'){
+				# Find the backup file creation time and verify its within 24 hours old
 				$creationTime = $report.Report.Parameters.Parameter[3]."#text"
+				# If backup file within 24 hours old and results contain success output success log entry and event viewer
 				if($creationTime -gt (Get-Date).AddDays(-1)){
 					[string]$VBVlog = "[$(Get-Date -format 'u')] [SUCCESS] [$vmName] - VM backup file verification completed successfully."
 					Write-host $VBVlog
 					$VBVresults += @($VBVlog)
 					Add-Content -Path $VBVReport -Value $VBVlog
+				# If Success but over 24 hours old output out of date log entry and event viewer
 				}else{
 					[string]$VBVlog = "[$(Get-Date -format 'u')] [OUTDATED] [$vmName] - VM backup file verification completed but backups are older than a day."
 					Write-host $VBVlog
@@ -105,6 +111,7 @@ foreach ($job in Get-VBRJob){
 					$VBVErrors = $true
 					$outdated = $true
 				}
+			# Validation Failure
 			}else{
 				[string]$VBVlog = "[$(Get-Date -format 'u')] [FAILURE] [$vmName] - VM backup file verification failed. Need to review backup health."
 				Write-host $VBVlog
