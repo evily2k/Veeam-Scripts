@@ -55,6 +55,9 @@ if($reportFormat -eq "xml"){
 	}
 }
 
+# Check for old report files and delete them
+Get-ChildItem -Path $reportDir -Include *.xml -File -Recurse | foreach { $_.Delete()}
+
 # Get all local Veeam backup jobs
 foreach ($job in Get-VBRJob){
 	
