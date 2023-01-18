@@ -24,8 +24,8 @@ LAST UPDATED: 18JAN2023
 Version: 1.0
 #>
 
-# Enabled debugging
-Set-PSDebug -Trace 2
+# Enabled debugging (Uncomment line below)
+#Set-PSDebug -Trace 2
 
 # Declarations
 Add-PSSnapin VeeamPSSnapin
