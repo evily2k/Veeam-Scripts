@@ -20,8 +20,8 @@ PURPOSE: Validates all vm data from all local backups and exports results to XML
 	
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 13JAN2023
-Version: 0.9
+LAST UPDATED: 18JAN2023
+Version: 1.0
 #>
 
 # Enabled debugging
@@ -30,6 +30,7 @@ Set-PSDebug -Trace 2
 # Declarations
 Add-PSSnapin VeeamPSSnapin
 $todaysDate = (get-date).ToString("yyyyMMdd")
+$backupDateCheck = ((Get-Date).AddDays(-1)).tostring("yyyy-M-dd")
 $eventSource = "Veeam Validator Results"
 $reportDir = "C:\KEworking\VeeamFLR\Report"
 $VBVReportName = "Veeam Validator Results.txt"
@@ -95,9 +96,9 @@ foreach ($job in Get-VBRJob){
 			$validatorResults = $report.Report.ResultInfo.Result
 			if ($validatorResults -eq 'Success'){
 				# Find the backup file creation time and verify its within 24 hours old
-				$creationTime = $report.Report.Parameters.Parameter[3]."#text"
+				$creationTime = ((get-date $report.Report.Parameters.Parameter[3]."#text").tostring("yyyy-M-dd"))
 				# If backup file within 24 hours old and results contain success output success log entry and event viewer
-				if($creationTime -gt (Get-Date).AddDays(-1)){
+				if($creationtime -ge $backupDateCheck){
 					[string]$VBVlog = "[$(Get-Date -format 'u')] [SUCCESS] [$vmName] - VM backup file verification completed successfully."
 					Write-host $VBVlog
 					$VBVresults += @($VBVlog)
