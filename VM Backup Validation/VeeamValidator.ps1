@@ -106,7 +106,7 @@ foreach ($job in Get-VBRJob){
 					Add-Content -Path $VBVReport -Value $VBVlog
 				# If Success but over 24 hours old output out of date log entry and event viewer
 				}else{
-					[string]$VBVlog = "[$(Get-Date -format 'u')] [OUTDATED] [$vmName] - VM backup file verification completed but backups are older than a day."
+					[string]$VBVlog = "[$(Get-Date -format 'u')] [OUTDATED] [$vmName] - Verification completed but backups are out of date ($creationTime)"
 					Write-host $VBVlog
 					$VBVresults += @($VBVlog)
 					Add-Content -Path $VBVReport -Value $VBVlog
