@@ -46,6 +46,9 @@ if (![System.Diagnostics.EventLog]::SourceExists($eventSource)){New-Eventlog -Lo
 #Check if Report folder exists; If not then create it
 if (!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
 
+# Check for old report files and delete them
+Get-ChildItem -Path $reportDir -Include *.xml -File -Recurse | foreach { $_.Delete()}
+
 # Check if logfile exists; If not then create it
 if($reportFormat -eq "xml"){
 	if (!(Test-Path $VBVReport)){
@@ -55,9 +58,6 @@ if($reportFormat -eq "xml"){
 		Add-Content -Path $VBVReport "`r`n", $VBVReportHeader
 	}
 }
-
-# Check for old report files and delete them
-Get-ChildItem -Path $reportDir -Include *.xml -File -Recurse | foreach { $_.Delete()}
 
 # Get all local Veeam backup jobs
 foreach ($job in Get-VBRJob){
@@ -94,9 +94,10 @@ foreach ($job in Get-VBRJob){
 			[xml]$report = get-content $ReportName
 			# Find validator result in XML file; either success or failure
 			$validatorResults = $report.Report.ResultInfo.Result
-			if ($validatorResults -eq 'Success'){
-				# Find the backup file creation time and verify its within 24 hours old
-				$creationTime = ((get-date $report.Report.Parameters.Parameter[3]."#text").tostring("yyyy-M-dd"))
+			# Find the backup file creation time and verify its within 24 hours old
+			$creationTime = ((get-date $report.Report.Parameters.Parameter[3]."#text").tostring("yyyy-M-dd"))
+			
+			if ($validatorResults -eq 'Success'){				
 				# If backup file within 24 hours old and results contain success output success log entry and event viewer
 				if($creationtime -ge $backupDateCheck){
 					[string]$VBVlog = "[$(Get-Date -format 'u')] [SUCCESS] [$vmName] - VM backup file verification completed successfully."
