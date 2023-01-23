@@ -20,8 +20,8 @@ PURPOSE: Validates all vm data from all local backups and exports results to XML
 	
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 18JAN2023
-Version: 1.0
+LAST UPDATED: 19JAN2023
+Version: 1.1
 #>
 
 # Enabled debugging (Uncomment line below)
@@ -65,6 +65,15 @@ foreach ($job in Get-VBRJob){
 	# Skip jobs that aren't backup type or not scheduled
 	if (($job.JobType -ne 'Backup') -or ($job.info.IsScheduleEnabled -ne $True)){continue}
 	
+	# Check if backups run Daily or Monthly and set the backupCheckDate accordingly
+	if($job.ScheduleOptions.OptionsDaily.Enabled){
+		$backupDateCheck = ((Get-Date).AddDays(-1)).tostring("yyyy-M-dd")
+	}elseif($job.ScheduleOptions.OptionsMonthly.Enabled){
+		$backupDateCheck = ((Get-Date).AddDays(-30)).tostring("yyyy-M-dd")
+	}else{
+		$backupDateCheck = ((Get-Date).AddDays(-1)).tostring("yyyy-M-dd")
+	}	
+	
 	# Get all VMs listed in backup job
 	$vmRestore = Get-VBRJobObject -job $job.Name
 	
@@ -106,7 +115,7 @@ foreach ($job in Get-VBRJob){
 					Add-Content -Path $VBVReport -Value $VBVlog
 				# If Success but over 24 hours old output out of date log entry and event viewer
 				}else{
-					[string]$VBVlog = "[$(Get-Date -format 'u')] [OUTDATED] [$vmName] - Verification completed but backups are out of date ($creationTime)"
+					[string]$VBVlog = "[$(Get-Date -format 'u')] [OUTDATED] [$vmName] - Verification completed but backups are out dated ($creationTime)."
 					Write-host $VBVlog
 					$VBVresults += @($VBVlog)
 					Add-Content -Path $VBVReport -Value $VBVlog
