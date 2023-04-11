@@ -20,8 +20,8 @@ PURPOSE: Validates all vm data from all local backups and exports results to XML
 	
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 24FEB2023
-Version: 1.2
+LAST UPDATED: 19JAN2023
+Version: 1.1
 #>
 
 # Enabled debugging (Uncomment line below)
@@ -124,14 +124,7 @@ foreach ($job in Get-VBRJob){
 				}
 			# Validation Failure
 			}else{
-				# Pulls error message from XML log file
-				if(test-path $reportName){
-					$reportError = $report.Report.ResultInfo.Error
-					$reportError = ($reportError.Split([Environment]::NewLine) | Select -First 1).Replace("1. ","")
-					[string]$VBVlog = "[$(Get-Date -format 'u')] [FAILURE] [$vmName] - $reportError"
-				}else{
-					[string]$VBVlog = "[$(Get-Date -format 'u')] [FAILURE] [$vmName] - VM backup file verification failed. No validator report generated."
-				}
+				[string]$VBVlog = "[$(Get-Date -format 'u')] [FAILURE] [$vmName] - VM backup file verification failed. Need to review backup health."
 				Write-host $VBVlog
 				$VBVresults += @([string]$VBVlog)
 				Add-Content -Path $VBVReport -Value $VBVlog
