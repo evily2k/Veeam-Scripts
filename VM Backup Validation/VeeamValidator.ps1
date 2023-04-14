@@ -20,7 +20,7 @@ PURPOSE: Validates all vm data from all local backups and exports results to XML
 	
 CREATOR: Dan Meddock
 CREATED: 20JUN2022
-LAST UPDATED: 24FEB2023
+LAST UPDATED: 13APR2023
 Version: 1.2
 #>
 
@@ -44,7 +44,7 @@ $reportFormat = "xml"
 if (![System.Diagnostics.EventLog]::SourceExists($eventSource)){New-Eventlog -LogName Application -Source $eventSource}
 
 #Check if Report folder exists; If not then create it
-if (!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force}
+if (!(test-path $reportDir -PathType Leaf)){new-item $reportDir -ItemType Directory -force | Out-Null}
 
 # Check for old report files and delete them
 Get-ChildItem -Path $reportDir -Include *.xml -File -Recurse | foreach { $_.Delete()}
