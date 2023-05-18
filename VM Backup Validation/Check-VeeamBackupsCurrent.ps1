@@ -1,6 +1,6 @@
 <#
 TITLE: Check-VeeamBackupsCurrent
-PURPOSE: This script will check if the Veeam backups are current based of their schedule options
+PURPOSE: This script will check if the local and offsite Veeam backups are current based of the jobs scheduled options
 CREATOR: Dan Meddock
 CREATED: 17MAY2023
 LAST UPDATED: 18MAY2023
