@@ -11,6 +11,7 @@ LAST UPDATED: 18MAY2023
 # Zero out $offsiteOutdatedCount variable
 $offsiteOutdatedCount = 0
 $localOutdatedCount = 0
+$outdatedJobs = @()
 
 # Add the powershell snap in if applicable
 Add-PSSnapin VeeamPSSnapin -erroraction silentlycontinue
@@ -79,10 +80,11 @@ Try{
 		$getSchedulingInfo = Get-BackupDateCheck $localJob.ScheduleOptions
 
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
-			Write-Host "The latest local restore point for ""$jobName"" is current ($lastBackupTime) and is scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "The latest local restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
 		} else {
-			Write-Host "The latest local restore point for ""$jobName"" is outdated ($lastBackupTime) and is scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "The latest local restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
 			$localOutdatedCount++
+			$outdatedJobs+=$jobName
 		}
 	}
 
@@ -95,10 +97,11 @@ Try{
 		$lastBackupTime = $lastBackup.endtime
 		
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
-			Write-Host "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and is scheduled to run $($getSchedulingInfo.selectedSchedule)."			
+			Write-Host "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."			
 		} else {
-			Write-Host "The latest offsite restore point for ""$jobName"" is outdated ($lastBackupTime) and is scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "The latest offsite restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
 			$offsiteOutdatedCount++
+			$outdatedJobs+=$jobName
 		}
 	}
 
@@ -107,7 +110,8 @@ Try{
 		Write-Host "All backups are current."
 		Exit 0
 	} else {
-		Write-Host "One or more backups are outdated."
+		Write-Host "The following backup jobs are outdated."
+		Write-Host $outdatedJobs
 		Exit 1
 	}
 }Catch{
