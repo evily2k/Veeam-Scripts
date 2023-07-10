@@ -66,8 +66,8 @@ Try{
 	# Pull job info for both local and offsite backups
 	Write-Host "Getting backup job info."
 	#Get-VBRComputerBackupJob
-	$localJobs = Get-VBRJob | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup"}
-	$offsiteJobs = Get-VBRJob | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup Copy"}
+	$localJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup" -and (!($_.JobType -eq 'EpAgentBackup'))}
+	$offsiteJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup Copy" -and (!($_.JobType -eq 'EpAgentBackup'))}
 
 	# Check local Veeam backups
 	Write-Host "Checking local Veeam backups..."
