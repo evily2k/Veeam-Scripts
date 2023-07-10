@@ -3,12 +3,13 @@ TITLE: Check-VeeamBackupsCurrent
 PURPOSE: This script will check if the local and offsite Veeam backups are current based of the jobs scheduled options
 CREATOR: Dan Meddock
 CREATED: 17MAY2023
-LAST UPDATED: 18MAY2023
+LAST UPDATED: 09JUL2023
 #>
 
 # Declarations
 
 # Zero out $offsiteOutdatedCount variable
+$eventSource = "Veeam Restore Point Checker"
 $offsiteOutdatedCount = 0
 $localOutdatedCount = 0
 $outdatedJobs = @()
@@ -63,6 +64,9 @@ function Get-BackupDateCheck ($scheduleOptions) {
 # Main Logic
 
 Try{
+	# Check if EventLog exists; ; If not then create it
+	if (![System.Diagnostics.EventLog]::SourceExists($eventSource)){New-Eventlog -LogName Application -Source $eventSource}
+	
 	# Pull job info for both local and offsite backups
 	Write-Host "Getting backup job info."
 	#Get-VBRComputerBackupJob
@@ -81,9 +85,13 @@ Try{
 		$getSchedulingInfo = Get-BackupDateCheck $localJob.ScheduleOptions
 
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
-			Write-Host "The latest local restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			[string]$currentMessage = "The latest local restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "$currentMessage"
+			$eventLogOutput += @([string]$currentMessage)
 		} else {
-			Write-Host "The latest local restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			[string]$outdatedMessage = "The latest local restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "$outdatedMessage"
+			$eventLogOutput += @([string]$outdatedMessage)
 			$localOutdatedCount++
 			$outdatedJobs+=$jobName
 		}
@@ -100,9 +108,13 @@ Try{
 		$getSchedulingInfo = Get-BackupDateCheck $offsiteJob.ScheduleOptions
 		
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
-			Write-Host "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."			
+			[string]$currentMessage = "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "$currentMessage"
+			$eventLogOutput += @([string]$currentMessage)			
 		} else {
-			Write-Host "The latest offsite restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			[string]$outdatedMessage = "The latest offsite restore point for ""$jobName"" is outdated ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
+			Write-Host "$outdatedMessage"
+			$eventLogOutput += @([string]$outdatedMessage)
 			$offsiteOutdatedCount++
 			$outdatedJobs+=$jobName
 		}
@@ -111,9 +123,15 @@ Try{
 	# Check backup status and exit with appropriate code
 	if ($localOutdatedCount -eq 0 -and $offsiteOutdatedCount -eq 0) {
 		Write-Host "All backups are current."
+		$eventType = "Information"
+		# Event will contain all VM verification results
+		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6907 -Message ($eventLogOutput | out-string)
 		Exit 0
 	} else {
 		Write-Host "The following backup jobs are outdated."
+		$eventType = "Error"
+		# If any VM verifications fail it creates a failure event
+		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6908 -Message ($eventLogOutput | out-string)
 		Write-Host $outdatedJobs
 		Exit 1
 	}
