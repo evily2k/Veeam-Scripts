@@ -22,37 +22,37 @@ Add-PSSnapin VeeamPSSnapin -erroraction silentlycontinue
 ## It will also set a time to compare and check if the backups are current.
 function Get-BackupDateCheck ($scheduleOptions) {
     switch ($scheduleOptions) {
-        {$_.OptionsDaily.Enabled} {
+        {$_.OptionsDaily.Enabled}{
 			$schedulingInfo = @{
 				selectedSchedule = "Daily"
 				compareDate = ((Get-Date).AddDays(-1)).ToString("yyyy-M-dd")
 			}
 			return $schedulingInfo
         }
-		{$_.OptionsMonthly.Enabled} {
+		{$_.OptionsMonthly.Enabled}{
 			$schedulingInfo = @{
 				selectedSchedule = "Monthly"
 				compareDate = ((Get-Date).AddDays(-30)).ToString("yyyy-M-dd")
 			}
 			return $schedulingInfo
         }
-		{$_.OptionsPeriodically.Enabled} {
+		{$_.OptionsPeriodically.Enabled}{
 			$schedulingInfo = @{
 				selectedSchedule = "Periodically"
 				compareDate = ((Get-Date).AddDays(-7)).ToString("yyyy-M-dd")
 			}
 			return $schedulingInfo
         }
-        {$_.OptionsContinuous.Enabled} {
+        {$_.OptionsContinuous.Enabled}{
 			$schedulingInfo = @{
-				selectedSchedule = "Continuous"
+				selectedSchedule = "Continuously"
 				compareDate = ((Get-Date).AddDays(-1)).ToString("yyyy-M-dd")
 			}
 			return $schedulingInfo
         }
-        default {
+        default{
             $schedulingInfo = @{
-				selectedSchedule = "Unknown"
+				selectedSchedule = "is Unknown"
 				compareDate = ((Get-Date).AddDays(-1)).ToString("yyyy-M-dd")
 			}
 			return $schedulingInfo
@@ -65,6 +65,7 @@ function Get-BackupDateCheck ($scheduleOptions) {
 Try{
 	# Pull job info for both local and offsite backups
 	Write-Host "Getting backup job info."
+	#Get-VBRComputerBackupJob
 	$localJobs = Get-VBRJob | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup"}
 	$offsiteJobs = Get-VBRJob | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup Copy"}
 
@@ -95,6 +96,8 @@ Try{
 		$jobName = $offsiteJob.Name
 		$lastBackup = (Get-VBRBackupSession | Where-Object {($_.JobName -match $jobName) -and ($_.IsCompleted -eq "True")} | Sort-Object CreationTime -Descending | Select-Object -First 1)
 		$lastBackupTime = $lastBackup.endtime
+		
+		$getSchedulingInfo = Get-BackupDateCheck $offsiteJob.ScheduleOptions
 		
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
 			Write-Host "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."			
