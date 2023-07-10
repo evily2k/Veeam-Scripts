@@ -3,7 +3,7 @@ TITLE: Check-VeeamBackupsCurrent
 PURPOSE: This script will check if the local and offsite Veeam backups are current based of the jobs scheduled options
 CREATOR: Dan Meddock
 CREATED: 17MAY2023
-LAST UPDATED: 09JUL2023
+LAST UPDATED: 10JUL2023
 #>
 
 # Declarations
@@ -68,7 +68,8 @@ Try{
 	if (![System.Diagnostics.EventLog]::SourceExists($eventSource)){New-Eventlog -LogName Application -Source $eventSource}
 	
 	# Pull job info for both local and offsite backups
-	Write-Host "Getting backup job info."
+	Write-Host "Getting backup job info...`n"
+	
 	#Get-VBRComputerBackupJob
 	$localJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup" -and (!($_.JobType -eq 'EpAgentBackup'))}
 	$offsiteJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup Copy" -and (!($_.JobType -eq 'EpAgentBackup'))}
@@ -80,8 +81,7 @@ Try{
 	foreach ($localJob in $localJobs) {
 		$jobName = $localJob.Name
 		$lastBackup = (Get-VBRBackupSession | ? {($_.JobName -eq $jobName) -and ($_.IsCompleted -eq "True")} | Sort-Object CreationTime -Descending | Select-Object -First 1)
-		$lastBackupTime = $lastBackup.endtime
-		
+		$lastBackupTime = $lastBackup.endtime		
 		$getSchedulingInfo = Get-BackupDateCheck $localJob.ScheduleOptions
 
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
@@ -98,13 +98,12 @@ Try{
 	}
 
 	# Check offsite Veeam backups
-	Write-Host "Checking offsite Veeam backups..."
+	Write-Host "`nChecking offsite Veeam backups..."
 
 	foreach ($offsiteJob in $offsiteJobs) {
 		$jobName = $offsiteJob.Name
 		$lastBackup = (Get-VBRBackupSession | Where-Object {($_.JobName -match $jobName) -and ($_.IsCompleted -eq "True")} | Sort-Object CreationTime -Descending | Select-Object -First 1)
-		$lastBackupTime = $lastBackup.endtime
-		
+		$lastBackupTime = $lastBackup.endtime		
 		$getSchedulingInfo = Get-BackupDateCheck $offsiteJob.ScheduleOptions
 		
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
@@ -122,13 +121,13 @@ Try{
 
 	# Check backup status and exit with appropriate code
 	if ($localOutdatedCount -eq 0 -and $offsiteOutdatedCount -eq 0) {
-		Write-Host "All backups are current."
+		Write-Host "`nAll backups are current."
 		$eventType = "Information"
 		# Event will contain all VM verification results
 		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6907 -Message ($eventLogOutput | out-string)
 		Exit 0
 	} else {
-		Write-Host "The following backup jobs are outdated."
+		Write-Host "`nThe following backup jobs are outdated."
 		$eventType = "Error"
 		# If any VM verifications fail it creates a failure event
 		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6908 -Message ($eventLogOutput | out-string)
