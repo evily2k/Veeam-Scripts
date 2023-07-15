@@ -70,7 +70,7 @@ Try{
 	# Pull job info for both local and offsite backups
 	Write-Host "Getting backup job info...`n"
 	
-	#Get-VBRComputerBackupJob
+	# Get-VBRComputerBackupJob
 	$localJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup" -and (!($_.JobType -eq 'EpAgentBackup'))}
 	$offsiteJobs = Get-VBRJob -WarningAction:SilentlyContinue | ? {$_.Info.IsScheduleEnabled -eq $true -and $_.typetostring -like "*Backup Copy" -and (!($_.JobType -eq 'EpAgentBackup'))}
 
