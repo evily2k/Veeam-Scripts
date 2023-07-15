@@ -83,6 +83,8 @@ Try{
 		$lastBackup = (Get-VBRBackupSession | ? {($_.JobName -eq $jobName) -and ($_.IsCompleted -eq "True")} | Sort-Object CreationTime -Descending | Select-Object -First 1)
 		$lastBackupTime = $lastBackup.endtime		
 		$getSchedulingInfo = Get-BackupDateCheck $localJob.ScheduleOptions
+		
+		if ($lastBackupTime -eq $NULL){continue}
 
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
 			[string]$currentMessage = "The latest local restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
@@ -106,6 +108,8 @@ Try{
 		$lastBackupTime = $lastBackup.endtime		
 		$getSchedulingInfo = Get-BackupDateCheck $offsiteJob.ScheduleOptions
 		
+		if ($lastBackupTime -eq $NULL){continue}
+		
 		if ($lastBackupTime -gt $getSchedulingInfo.compareDate) {
 			[string]$currentMessage = "The latest offsite restore point for ""$jobName"" is current ($lastBackupTime) and scheduled to run $($getSchedulingInfo.selectedSchedule)."
 			Write-Host "$currentMessage"
@@ -127,7 +131,7 @@ Try{
 		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6907 -Message ($eventLogOutput | out-string)
 		Exit 0
 	} else {
-		Write-Host "`nThe following backup jobs are outdated."
+		Write-Host "`nThe following backup jobs are outdated:"
 		$eventType = "Error"
 		# If any VM verifications fail it creates a failure event
 		Write-EventLog -LogName Application -Source $eventSource -EntryType $eventType -EventId 6908 -Message ($eventLogOutput | out-string)
